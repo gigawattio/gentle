@@ -1,6 +1,7 @@
 package gentle
 
 import (
+	"strings"
 	"sync"
 	"time"
 
@@ -20,6 +21,15 @@ type CancellableRetryConfig struct {
 	BackoffProvider func() backoff.BackOff
 	Debug           bool
 	Quiet           bool
+}
+
+func (config CancellableRetryConfig) ActionNames() string {
+	names := make([]string, len(config.Actions))
+	for i, action := range config.Actions {
+		names[i] = action.Name
+	}
+	actionNames := strings.Join(names, ", ")
+	return actionNames
 }
 
 func CancellableRetry(config CancellableRetryConfig) (cancelFunc func() error) {
@@ -121,6 +131,9 @@ func CancellableRetry(config CancellableRetryConfig) (cancelFunc func() error) {
 		cancelChan <- ack
 		if err := <-ack; err != nil {
 			return err
+		}
+		if config.Debug || !config.Quiet {
+			log.Info("Cancellation finished OK for [%v]", config.ActionNames())
 		}
 		return nil
 	}
