@@ -5,9 +5,9 @@ import (
 	"sync"
 	"time"
 
-	"gigawatt-common/pkg/errorlib"
-
+	log "github.com/Sirupsen/logrus"
 	"github.com/cenkalti/backoff"
+	"github.com/gigawattio/errorlib"
 )
 
 type Action struct {
@@ -84,7 +84,7 @@ func CancellableRetry(config CancellableRetryConfig) (cancelFunc func() error) {
 
 		for i, action := range config.Actions {
 			if config.Debug {
-				log.Debug("Starting action [%v/%v] %q", i+1, numActions, action.Name)
+				log.Debugf("Starting action [%v/%v] %q", i+1, numActions, action.Name)
 			}
 		Retry:
 			if err := action.Func(); err != nil {
@@ -93,12 +93,12 @@ func CancellableRetry(config CancellableRetryConfig) (cancelFunc func() error) {
 				}
 				waitDuration := strategy.NextBackOff()
 				if config.Debug || !config.Quiet {
-					log.Error("[%v/%v] %q: %s (next wait=%v)", i+1, numActions, action.Name, err, waitDuration)
+					log.Errorf("[%v/%v] %q: %s (next wait=%v)", i+1, numActions, action.Name, err, waitDuration)
 				}
 				select {
 				case ack := <-cancelChan:
 					if config.Debug || !config.Quiet {
-						log.Info("Cancelled during backoff at action [%v/%v] %q", i+1, numActions, action.Name)
+						log.Infof("Cancelled during backoff at action [%v/%v] %q", i+1, numActions, action.Name)
 					}
 					ack <- nil
 					return
@@ -109,7 +109,7 @@ func CancellableRetry(config CancellableRetryConfig) (cancelFunc func() error) {
 			select {
 			case ack := <-cancelChan:
 				if config.Debug || !config.Quiet {
-					log.Info("Cancelled after action [%v/%v] %q", i+1, numActions, action.Name)
+					log.Infof("Cancelled after action [%v/%v] %q", i+1, numActions, action.Name)
 				}
 				ack <- nil
 				return
@@ -133,7 +133,7 @@ func CancellableRetry(config CancellableRetryConfig) (cancelFunc func() error) {
 			return err
 		}
 		if config.Debug || !config.Quiet {
-			log.Info("Cancellation finished OK for [%v]", config.ActionNames())
+			log.Infof("Cancellation finished OK for [%v]", config.ActionNames())
 		}
 		return nil
 	}

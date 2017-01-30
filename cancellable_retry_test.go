@@ -5,9 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"gigawatt-common/pkg/errorlib"
-
-	"gigawatt-common/pkg/gentle"
+	"github.com/gigawattio/errorlib"
+	"github.com/gigawattio/gentle"
 )
 
 func TestCancellableRetry(t *testing.T) {

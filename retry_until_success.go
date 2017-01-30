@@ -3,6 +3,7 @@ package gentle
 import (
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/cenkalti/backoff"
 )
 
@@ -11,15 +12,11 @@ import (
 // Exponential backoff is used to prevent failing attempts from looping madly.
 func RetryUntilSuccess(name string, operation func() error, strategy backoff.BackOff) {
 	errNotifReceiver := func(err error, nextWait time.Duration) {
-		log.ExtraCalldepth = 1
-		log.Error("%v notified of error: %s [next wait=%s]", name, err, nextWait)
-		log.ExtraCalldepth = 0
+		log.Errorf("%v notified of error: %s [next wait=%s]", name, err, nextWait)
 	}
 	for {
 		if err := backoff.RetryNotify(operation, strategy, errNotifReceiver); err != nil {
-			log.ExtraCalldepth = 1
-			log.Error("%v failure: %s [will keep trying]", name, err)
-			log.ExtraCalldepth = 0
+			log.Errorf("%v failure: %s [will keep trying]", name, err)
 			strategy.Reset()
 			continue
 		}
