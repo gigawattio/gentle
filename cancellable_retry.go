@@ -5,9 +5,9 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/cenkalti/backoff"
 	"github.com/gigawattio/errorlib"
+	log "github.com/sirupsen/logrus"
 )
 
 type Action struct {
